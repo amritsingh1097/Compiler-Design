@@ -1,0 +1,10 @@
+cin
+conio
+cout
+fstream
+iostream
+main
+std
+stdio
+stdlib
+string
