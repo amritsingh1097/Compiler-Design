@@ -16,13 +16,18 @@ class Tokenizer
 	ifstream *comparisonFiles;
 	string *fileNames;
 	int fileCount;
+	char wild_char;
 	list<char> input_program_optimised;
-	int numIdenifiers, numConstants, numStrings, numSpecialSymbols, numOperators, numKeywords, numSpecialKeywords;
+	int numIdenifiers, numConstants, numStrings, numCharacters, numSpecialSymbols, numOperators, numKeywords, numSpecialKeywords;
 	public:
 		Tokenizer();
 		~Tokenizer();
 		void tokenize(ifstream *IP_file);
 		void optimizeFile(ifstream *IP_file);
+//		bool isPreprocessor();
+//		bool isString();
+//		bool isConstant();
+//		bool compareWithFiles();
 		bool compareStrings(string temp, ifstream *comparison_file, string fileName);
 		void printOptimizedFile();
 };
