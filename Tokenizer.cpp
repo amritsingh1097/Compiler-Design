@@ -1,5 +1,3 @@
-/* TODO: Including(Importing) files using '"' is to be fixed. */
-
 #include "tokenizer.h"
 
 Tokenizer::Tokenizer(void)
@@ -39,7 +37,7 @@ Tokenizer::~Tokenizer(void)
 	cout << left << setw(20) << "Special Symbols " << right << ": " << numSpecialSymbols << endl;
 	cout << left << setw(20) << "Special Keywords " << right << ": " << numSpecialKeywords << endl;
 	cout << "==========================" << endl;
-	cout << "Closing Files..." << endl;
+//	cout << "Closing Files..." << endl;
 	comparisonFiles[0].close();
 	comparisonFiles[1].close();
 	comparisonFiles[2].close();
@@ -82,18 +80,13 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 				input_program_optimised.push_back(ch);
 				last_char = ch;
 				IP_file->get(ch);
-//				cout << "CH: " << ch << endl;
-//				if(last_char == '\\' && ch == '\'')     // Condition migrated to while()
-//				{
-////					cout << "HELLO HELLO" << endl;
-//				}
 			} while((ch != '\'' && ch != '\n') || (last_char == '\\' && ch == '\''));
 			if(ch == '\n')
 			{
 				input_program_optimised.push_back(this->wild_char);
 			}
 		}
-		
+
 		// For detecting STRINGS so it should not conflict with strings, e.g. "SOME///STRING"
 		if(ch == '"')
 		{
@@ -103,54 +96,38 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 			{
 				last_char = ch;
 				IP_file->get(ch);
-//				cout << "CH: " << ch << endl;
 				if(last_char == '\n' && IP_file->eof())
 				{
-//					cout << "END" << last_char << "END" << endl;
 					condition = false;
 				}
 				else if(last_char == '\\' && ch == '\n')
 				{
-//					cout << "HELLO HELLO" << input_program_optimised.back() << endl;
 					input_program_optimised.pop_back();
-//					cout << "HELLO HELLO" << input_program_optimised.back() << endl;
 					condition = true;
 				}
 				else if(last_char == ch && ch == '\n' && input_program_optimised.back() != this->wild_char)
 				{
-					cout << "CH: " << ch << "\tLAST_CHAR: " << last_char << endl;
-					cout << "input_program_optimised.back():: " << input_program_optimised.back() << endl;
 					input_program_optimised.push_back(this->wild_char);
-					getch();
+					condition = false;
 				}
 				else if(ch == '\n' && last_char != '\\' && last_char != '\n')
 				{
-//					cout << "CH: " << ch << "\tLAST_CHAR: " << last_char << endl;
-//					cout << "input_program_optimised.back():: " << input_program_optimised.back() << endl;
+					cout << "CH: " << ch << "\tLAST_CHAR: " << last_char << endl;
+					cout << "input_program_optimised.back():: " << input_program_optimised.back() << endl;
 					input_program_optimised.push_back(this->wild_char);
-//					cout << "input_program_optimised.back():: " << input_program_optimised.back() << endl;
 					condition = false;
 				}
 				else if(ch == '"' && last_char != '\\')
 				{
-//					cout << "input_program_optimised.back():: " << input_program_optimised.back() << endl;
 					condition = false;
 				}
 				else if(ch != '\t' && ch != '\n')
 				{
-//					cout << "Appending " << ch << " to file" << endl;
 					input_program_optimised.push_back(ch);
-//					last_char = ch;
 				}
 			} while(condition);
-//			cout << "CH: " << ch << "///" << endl;
-//			} while((ch != '"' && ch != '\n') || (last_char == '\\' && ch == '"'));
-//			if(ch == '\n')
-//			{
-//				cout << "AFTER STRING EXTRACTION: " << ch << endl;
-//			}
 		}
-		
+
 		// For removing comments
 		if(ch == '/' && last_char != '/' && last_char != '*')
 		{
@@ -177,15 +154,7 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 			IP_file->get(ch);
 			last_char = '\0';
 		}
-		
-		// If no comment is encountered, e.g. in file path - "path/file" #### Will be covered in strings part
-//		if(last_char == '/' && ch != '/' && ch != '*')
-//		{
-//			cout << "INSIDE ELSE IF" << endl;
-//			input_program_optimised.push_back(ch);
-//			last_char = ch;
-//		}
-		
+
 		// For removing newline and tab characters
 		if(ch != '\t' && ch != '\n')
 		{
@@ -193,7 +162,7 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 			last_char = ch;
 		}
 	}
-	
+
 	// Print Optimized file
 	printOptimizedFile();
 }
@@ -203,13 +172,13 @@ void Tokenizer::tokenize(ifstream *IP_file)
 	// Remove Tabs and NewLine Characters
 	optimizeFile(IP_file);
 	cout << endl << endl;
-	
+
 	string temp;
 	bool matched = false, constant = true, stringStart = false, charStart = false, IP_File_EOF = false, preprocessorStart = false;
 	char ch;
-	
+
 	list<char>::iterator it = input_program_optimised.begin();
-	
+
 	cout << "-------------------------------------" << endl << "TOKEN RECOGNITION:" << endl << "-------------------------------------" << endl;
 	// Reading optimized input program from array one character at a time
 	while(it != input_program_optimised.end())
@@ -233,21 +202,13 @@ void Tokenizer::tokenize(ifstream *IP_file)
 				if((*it) == '\\')
 				{
 					it++;
-//					cout << "IT: " << (*it) << endl;
 					temp.append(sizeof(*it), *it);
 				}
 				it++;
-//				cout << "CH: " << (*it) << endl;
-//				if((*it) == '\n' || it == input_program_optimised.end())
-//				{
-//					cout << "BACKSLASH N" << endl;
-//					break;
-//				}
 			}
 			cout << setw(20) << temp << "\t-->\tCHARACTER" << endl;
 			this->numCharacters++;
 			charStart = false;
-//			cout << "CH: " << (*it) << endl;
 			if((*it) == this->wild_char)
 			{
 				it++;
@@ -255,7 +216,7 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			temp.clear();
 			ch = *it;
 		}
-		
+
 		// Check the start of the string
 		if(ch == '"' && !stringStart && !preprocessorStart)
 		{
@@ -268,7 +229,6 @@ void Tokenizer::tokenize(ifstream *IP_file)
 		{
 			while((*it) != '"' && (*it) != this->wild_char)
 			{
-//				cout << "INSIDE WHILE..." << endl;
 				temp.append(sizeof(*it), *it);
 				// For escape characters
 				if((*it) == '\\')
@@ -298,7 +258,7 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			temp.clear();
 			temp = ch = *it;
 		}
-		
+
 		// For processing Preprocessor Directives
 		char temp_char = *(--it);
 		it++;
@@ -334,13 +294,10 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			preprocessorStart = false;
 			temp.clear();
 			ch = *it;
-//			cout << "CH: " << ch << endl;
 		}
-		
-//		cout << "CH: " << ch << "\nTEMP: " << temp << endl;
 
 		// Storing the string
-		if(((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_')
+		if(((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || ch == '$')
 		   || (((temp[0] >= 'a' && temp[0] <= 'z') || (temp[0] >= 'A' && temp[0] <= 'Z') || temp[0] == '_') && ((ch >= '0' && ch <= '9') || (ch == '_') || (ch == '$')))
 		   || (ch >= '0' && ch <= '9'))
 		{
@@ -348,22 +305,18 @@ void Tokenizer::tokenize(ifstream *IP_file)
 		}
 		else
 		{
-//			cout << "TEMP: " << temp << endl;
 			// Means a single Special Symbol or operator
-			if(!temp.length() && ch != ' ' && ch != '\n')
+			if(!temp.length() && ch != ' ' && ch != '\n' && ch != this->wild_char)
 			{
 				if(ch == '#')
 				{
-//					cout << "PREPROCESSOR START" << endl;
 					preprocessorStart = true;
 				}
-//				cout << "TEMP: " << (ch == '\n') << endl;
 				temp = ch;
 			}
 
 			if(temp.length())
 			{
-//				cout << "CH: " << ch << endl;
 				for(int i=0; i<this->fileCount; i++)
 				{
 					matched = compareStrings(temp, &comparisonFiles[i], fileNames[i]);
@@ -422,7 +375,6 @@ void Tokenizer::tokenize(ifstream *IP_file)
 				else if(!matched && !constant)
 				{
 					// Ientifier
-//					cout << "CH: " << ch << endl;
 					this->numIdenifiers++;
 					cout << setw(20) << temp << "\t-->\tIDENTIFIER" << endl;
 				}
@@ -441,21 +393,18 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			}
 		}
 		it++;
-//		cout << endl << endl << "IT++ END: " << *it << endl;
-//		getch();
 	}
 }
 
 bool Tokenizer::compareStrings(string temp, ifstream *comparison_file, string fileName)
 {
 	string file_string;
-	
+
 	while(!comparison_file->eof())
 	{
 		*comparison_file >> file_string;
 		if(temp == file_string)
 		{
-//			cout << *temp << " IS RECOGNISED AS " << fileName << endl << endl;
 			comparison_file->seekg(0, ios::beg);
 			return true;
 		}
