@@ -24,10 +24,7 @@ class Tokenizer
 		~Tokenizer();
 		void tokenize(ifstream *IP_file);
 		void optimizeFile(ifstream *IP_file);
-//		bool isPreprocessor();
-//		bool isString();
-//		bool isConstant();
-//		bool compareWithFiles();
+		inline char getWildChar();
 		bool compareStrings(string temp, ifstream *comparison_file, string fileName);
 		void printOptimizedFile();
 };

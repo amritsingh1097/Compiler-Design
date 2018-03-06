@@ -37,7 +37,8 @@ Tokenizer::~Tokenizer(void)
 	cout << left << setw(20) << "Special Symbols " << right << ": " << numSpecialSymbols << endl;
 	cout << left << setw(20) << "Special Keywords " << right << ": " << numSpecialKeywords << endl;
 	cout << "==========================" << endl;
-//	cout << "Closing Files..." << endl;
+
+	// Closing Files
 	comparisonFiles[0].close();
 	comparisonFiles[1].close();
 	comparisonFiles[2].close();
@@ -184,7 +185,6 @@ void Tokenizer::tokenize(ifstream *IP_file)
 	while(it != input_program_optimised.end())
 	{
 		ch = *it;
-//		cout << ch;
 
 		// Check the start of the character
 		if(ch == '\'' && !charStart && !preprocessorStart)
