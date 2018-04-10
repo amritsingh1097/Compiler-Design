@@ -1,17 +1,17 @@
 # Project: Compiler
 # Makefile created by Dev-C++ 5.11
 
-CPP      = g++.exe -D__DEBUG__
-CC       = gcc.exe -D__DEBUG__
+CPP      = g++.exe
+CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = main.o SymbolTable.o Tokenizer.o NFA.o State.o
-LINKOBJ  = main.o SymbolTable.o Tokenizer.o NFA.o State.o
-LIBS     = -L"E:/IDEs/Dev-Cpp/MinGW64/lib" -L"E:/IDEs/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -std=c++11 -std=gnu++11 -g3
+OBJ      = main.o SymbolTable.o Tokenizer.o NFA.o State.o DFA.o
+LINKOBJ  = main.o SymbolTable.o Tokenizer.o NFA.o State.o DFA.o
+LIBS     = -L"E:/IDEs/Dev-Cpp/MinGW64/lib" -L"E:/IDEs/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc -std=c++11 -std=gnu++11
 INCS     = -I"E:/IDEs/Dev-Cpp/MinGW64/include" -I"E:/IDEs/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"E:/IDEs/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
 CXXINCS  = -I"E:/IDEs/Dev-Cpp/MinGW64/include" -I"E:/IDEs/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"E:/IDEs/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"E:/IDEs/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
 BIN      = Compiler.exe
-CXXFLAGS = $(CXXINCS) -g3 -std=c++11 -std=gnu++11
-CFLAGS   = $(INCS) -g3
+CXXFLAGS = $(CXXINCS) -std=c++11 -std=gnu++11
+CFLAGS   = $(INCS) 
 RM       = rm.exe -f
 
 .PHONY: all all-before all-after clean clean-custom
@@ -38,3 +38,6 @@ NFA.o: NFA.cpp
 
 State.o: State.cpp
 	$(CPP) -c State.cpp -o State.o $(CXXFLAGS)
+
+DFA.o: DFA.cpp
+	$(CPP) -c DFA.cpp -o DFA.o $(CXXFLAGS)

@@ -3,17 +3,19 @@
 #include <stdlib.h>
 #include "tokenizer.h"
 #include "nfa.h"
+#include "dfa.h"
 using namespace std;
 
-string regex[] = {"(a|b)*",
-				  "(a|b)*.a.(a|b)*.a.(a|b)*",
-				  "b*.a.b*.a.b*|b*.a.b*",
-				  "(a.b|a)*.(a.a|b)",
-				  "(a*.b|b*.a)*.a",
-				  "a*|(a.b|a)*",
-				  "(a*.a.b|b.a)*.a*",
-	   		   	  "(a.b|a*)*.b",
-				  "(a|b)*abb(a|b)*"};
+const string sample_regex[] = {	"(a|b)*",
+	  		 					"(a|b)*abb",
+								"(a|b)*a(a|b)*a(a|b)*",
+								"b*ab*ab*|b*ab*",
+								"(ab|a)*(aa|b)",
+								"(a*b|b*a)*a",
+								"a*|(ab|a)*",
+								"(a*ab|ba)*.a*",
+								"(ab|a*)*b",
+								"(a|b)*abb(a|b)*" };
 
 void runTokenizer()
 {
@@ -29,18 +31,28 @@ void runTokenizer()
 
 void runGenerateNFA()
 {
-	int numInputChars = 2;
-	NFA *nfa = new NFA(numInputChars, new char[2]{'a', 'b'});
-	nfa->generateNFA(regex[0]);
-	cout << endl << "TRANSITION TABLE:" << endl << endl;
+	NFA *nfa = new NFA();
+	nfa->generateEpsilonNFA(sample_regex[1]);
+	cout << endl << "-----------------------" << endl;
+	cout << "\tNFA" << endl;
+	cout << "-----------------------" << endl;
 	nfa->printTransitionTable();
+	
+	DFA *dfa = new DFA(nfa->getInputChars());
+	cout << endl << "-----------------------" << endl;
+	cout << "\tDFA" << endl;
+	cout << "-----------------------" << endl;
+	dfa->convertIntoDFA(nfa);
 }
 
 int main()
 {
-	// To run the tokenizer program, uncomment the following line
-//	runTokenizer();
-	runGenerateNFA();
+	// To run the tokenizer, uncomment the following line.
+	//runTokenizer();
+	
+	// To generate NFA for regular expression, uncomment following line.
+	//runGenerateNFA();
+	cout << "\n\nPress key to exit...";
 	getch();
 	return 0;
 }

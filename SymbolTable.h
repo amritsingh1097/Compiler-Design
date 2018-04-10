@@ -5,16 +5,26 @@
 #include <conio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iomanip>
+#include "list"
 using namespace std;
+
+struct SymbolAttributes
+{
+	string symbolName, symbolType;
+	int symbolSize;
+};
 
 class SymbolTable
 {
-	int symbolName, symbolType, symbolAttribute, symbolValue;
-	string **Symbol_Table;
+	list< pair<string, string> > DataTypeSizes;
+	list<struct SymbolAttributes> Symbol_Table;
+	
+	// Functions
+	short getSize(string dataType);
 	public:
-		SymbolTable();
-		~SymbolTable();
-		void updateTable(string name, string type);
+		void addSymbol(string symbolName, string symbolType);
+		void printSymbolTable();
 };
 
 #endif

@@ -10,7 +10,7 @@ PrivateResource=
 ResourceIncludes=
 MakeIncludes=
 Compiler=
-CppCompiler=
+CppCompiler=-std=c++11_@@_-std=gnu++11_@@_
 Linker=
 IsCpp=1
 Icon=
@@ -19,17 +19,17 @@ ObjectOutput=
 LogOutput=
 LogOutputEnabled=0
 OverrideOutput=0
-OverrideOutputName=
+OverrideOutputName=Compiler.exe
 HostApplication=
 UseCustomMakefile=0
 CustomMakefile=
 CommandLine=
-Folders=
+Folders="Comparison Files"
 IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
-CompilerSettings=0000000000000000001000000
-UnitCount=9
+CompilerSettings=0000000000000000000000000
+UnitCount=15
 
 [VersionInfo]
 Major=1
@@ -39,14 +39,14 @@ Build=0
 LanguageID=1033
 CharsetID=1252
 CompanyName=
-FileVersion=
+FileVersion=1.0.0.0
 FileDescription=Developed using the Dev-C++ IDE
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=
+ProductVersion=1.0.0.0
 AutoIncBuildNr=0
 SyncProduct=1
 
@@ -82,7 +82,7 @@ CompileCpp=1
 
 [Unit6]
 FileName=Comparison Files\keywords.txt
-Folder=
+Folder=Comparison Files
 Compile=0
 Link=0
 Priority=1000
@@ -93,7 +93,7 @@ CompileCpp=1
 [Unit7]
 FileName=Comparison Files\operators.txt
 CompileCpp=1
-Folder=
+Folder=Comparison Files
 Compile=0
 Link=0
 Priority=1000
@@ -103,7 +103,7 @@ BuildCmd=
 [Unit8]
 FileName=Comparison Files\special_keywords.txt
 CompileCpp=1
-Folder=
+Folder=Comparison Files
 Compile=0
 Link=0
 Priority=1000
@@ -113,7 +113,7 @@ BuildCmd=
 [Unit9]
 FileName=Comparison Files\special_symbols.txt
 CompileCpp=1
-Folder=
+Folder=Comparison Files
 Compile=0
 Link=0
 Priority=1000
@@ -121,7 +121,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit10]
-FileName=Tokenizer.h
+FileName=NFA.cpp
 CompileCpp=1
 Folder=
 Compile=1
@@ -142,6 +142,56 @@ BuildCmd=
 
 [Unit3]
 FileName=SymbolTable.h
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit11]
+FileName=NFA.h
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit12]
+FileName=State.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit13]
+FileName=State.h
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit14]
+FileName=DFA.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit15]
+FileName=DFA.h
 CompileCpp=1
 Folder=
 Compile=1

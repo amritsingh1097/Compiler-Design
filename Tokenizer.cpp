@@ -1,3 +1,4 @@
+#include "stack"
 #include "tokenizer.h"
 
 Tokenizer::Tokenizer(void)
@@ -22,6 +23,7 @@ Tokenizer::Tokenizer(void)
 	this->comparisonFiles[1].open("./Comparison Files/keywords.txt");
 	this->comparisonFiles[2].open("./Comparison Files/special_symbols.txt");
 	this->comparisonFiles[3].open("./Comparison Files/special_keywords.txt");
+	this->symbolTable = new SymbolTable();
 }
 
 Tokenizer::~Tokenizer(void)
@@ -37,7 +39,7 @@ Tokenizer::~Tokenizer(void)
 	cout << left << setw(20) << "Special Symbols " << right << ": " << numSpecialSymbols << endl;
 	cout << left << setw(20) << "Special Keywords " << right << ": " << numSpecialKeywords << endl;
 	cout << "==========================" << endl;
-
+	
 	// Closing Files
 	comparisonFiles[0].close();
 	comparisonFiles[1].close();
@@ -49,6 +51,20 @@ Tokenizer::~Tokenizer(void)
 	delete [] comparisonFiles;
 	delete [] fileNames;
 	cout << "Memory Deallocated." << endl;
+}
+
+inline char Tokenizer::getWildChar()
+{
+	return this->wild_char;
+}
+
+bool Tokenizer::isDataType(string temp)
+{
+	if(temp == "bool" || temp == "char" || temp == "double" || temp == "float" || temp == "int" || temp == "long" || temp == "short" || temp == "unsigned")
+	{
+		return true;
+	}
+	return false;
 }
 
 void Tokenizer::optimizeFile(ifstream *IP_file)
@@ -87,7 +103,7 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 				input_program_optimised.push_back(this->wild_char);
 			}
 		}
-
+		
 		// For detecting STRINGS so it should not conflict with strings, e.g. "SOME///STRING"
 		if(ch == '"')
 		{
@@ -128,7 +144,7 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 				}
 			} while(condition);
 		}
-
+		
 		// For removing comments
 		if(ch == '/' && last_char != '/' && last_char != '*')
 		{
@@ -155,7 +171,7 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 			IP_file->get(ch);
 			last_char = '\0';
 		}
-
+		
 		// For removing newline and tab characters
 		if(ch != '\t' && ch != '\n')
 		{
@@ -163,23 +179,22 @@ void Tokenizer::optimizeFile(ifstream *IP_file)
 			last_char = ch;
 		}
 	}
-
-	// Print Optimized file
-	printOptimizedFile();
 }
 
 void Tokenizer::tokenize(ifstream *IP_file)
 {
 	// Remove Tabs and NewLine Characters
 	optimizeFile(IP_file);
-	cout << endl << endl;
-
+	
 	string temp;
 	bool matched = false, constant = true, stringStart = false, charStart = false, IP_File_EOF = false, preprocessorStart = false;
 	char ch;
-
+	
+	bool isLastCharSemiColon;								// For Symbol Table Creation
+	stack<string> Stack;									// For Symbol Table Creation
+	
 	list<char>::iterator it = input_program_optimised.begin();
-
+	
 	cout << "-------------------------------------" << endl << "TOKEN RECOGNITION:" << endl << "-------------------------------------" << endl;
 	// Reading optimized input program from array one character at a time
 	while(it != input_program_optimised.end())
@@ -216,7 +231,7 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			temp.clear();
 			ch = *it;
 		}
-
+		
 		// Check the start of the string
 		if(ch == '"' && !stringStart && !preprocessorStart)
 		{
@@ -258,7 +273,7 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			temp.clear();
 			temp = ch = *it;
 		}
-
+		
 		// For processing Preprocessor Directives
 		char temp_char = *(--it);
 		it++;
@@ -295,7 +310,7 @@ void Tokenizer::tokenize(ifstream *IP_file)
 			temp.clear();
 			ch = *it;
 		}
-
+		
 		// Storing the string
 		if(((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || ch == '$')
 		   || (((temp[0] >= 'a' && temp[0] <= 'z') || (temp[0] >= 'A' && temp[0] <= 'Z') || temp[0] == '_') && ((ch >= '0' && ch <= '9') || (ch == '_') || (ch == '$')))
@@ -343,9 +358,26 @@ void Tokenizer::tokenize(ifstream *IP_file)
 								break;
 							}
 							case 1:
+								if(isDataType(temp))											// For Symbol Table Creation
+								{																// For Symbol Table Creation
+									Stack.push(temp);											// For Symbol Table Creation
+								}																// For Symbol Table Creation
 								this->numKeywords++;
 								break;
 							case 2:
+								if(temp == ";")													// For Symbol Table Creation
+								{																// For Symbol Table Creation
+									if(Stack.size())
+										Stack.pop();
+									isLastCharSemiColon = true;
+								}
+								else if(temp == "{")
+								{
+									if(Stack.size())
+										Stack.pop();
+									isLastCharSemiColon = false;
+								}
+								else { isLastCharSemiColon = false; }
 								this->numSpecialSymbols++;
 								break;
 							case 3:
@@ -375,9 +407,14 @@ void Tokenizer::tokenize(ifstream *IP_file)
 				else if(!matched && !constant)
 				{
 					// Ientifier
+					if(!Stack.empty())									// For Symbol Table Creation
+					{													// For Symbol Table Creation
+						symbolTable->addSymbol(temp, Stack.top());		// For Symbol Table Creation
+					}													// For Symbol Table Creation
 					this->numIdenifiers++;
 					cout << setw(20) << temp << "\t-->\tIDENTIFIER" << endl;
 				}
+				
 				// If there is an operator after any string of alphabets or digits or underscores(_)
 				if(((temp[temp.length()-1] >= 'a' && temp[temp.length()-1] <= 'z')
 				    || (temp[temp.length()-1] >= 'A' && temp[temp.length()-1] <= 'Z')
@@ -394,12 +431,13 @@ void Tokenizer::tokenize(ifstream *IP_file)
 		}
 		it++;
 	}
+	symbolTable->printSymbolTable();
 }
 
 bool Tokenizer::compareStrings(string temp, ifstream *comparison_file, string fileName)
 {
 	string file_string;
-
+	
 	while(!comparison_file->eof())
 	{
 		*comparison_file >> file_string;

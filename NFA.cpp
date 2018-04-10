@@ -1,23 +1,18 @@
 #include "nfa.h"
 #include "tokenizer.h"
 
-NFA::NFA(int numInputChars, char *inputChars)
+NFA::NFA()
 {
 	this->originalRegex = "";
 	this->postfixRegex = "";
-	this->epsilon = '$';
-	this->numInputChars = numInputChars+1;
-	this->inputChars = new char[this->numInputChars];
-	this->inputChars[0] = this->epsilon;
-	for(int i=1; i<this->numInputChars; i++)
-	{
-		this->inputChars[i] = inputChars[i-1];
-	}
+	this->epsilon = 238;
+	this->numInputChars = 0;
 	this->stateCounter = 0;
 }
 
-NFA::~NFA()
+list<char> NFA::getInputChars()
 {
+	return this->inputChars;
 }
 
 bool NFA::isRegexValid(string regex)
@@ -144,13 +139,36 @@ string NFA::transformRegex(string regex)
 	return regex;
 }
 
+bool NFA::notAlreadyAdded(char ch)
+{
+	list<char>::iterator it = inputChars.begin();
+	for(it; it != inputChars.end(); it++)
+	{
+		if(ch == (*it))	return false;
+	}
+	return true;
+}
 
-void NFA::generateNFA(string regex)
+void NFA::recognizeInputChars(string regex)
+{
+	inputChars.push_back(this->epsilon);
+	for(int i=0; i < regex.length(); i++)
+	{
+		if(!isOperator(regex[i]) && regex[i] != '(' && regex[i] != ')' && notAlreadyAdded(regex[i]))
+		{
+			inputChars.push_back(regex[i]);
+		}
+	}
+	numInputChars = inputChars.size();
+}
+
+void NFA::generateEpsilonNFA(string regex)
 {
 	if(!isRegexValid(regex))
 	{
 		return;
 	}
+	recognizeInputChars(regex);
 	this->originalRegex = regex;
 	cout << "Regular Expression: " << regex << endl;
 	regex = transformRegex(regex);
@@ -161,17 +179,17 @@ void NFA::generateNFA(string regex)
 	{
 		if(!isOperator(postfixRegex[i]))
 		{
-			pair<State*, State*> newState;
-			newState.first = new State(this->stateCounter++);
-			newState.second = new State(this->stateCounter++);
-			newState.first->addNextState(postfixRegex[i], newState.second);
+			pair<State*, State*> newNFA;
+			newNFA.first = new State(this->stateCounter++);
+			newNFA.second = new State(this->stateCounter++);
+			newNFA.first->addNextState(postfixRegex[i], newNFA.second);
 
-			newState.first->setStartState(true);
-			newState.second->setFinalState(true);
-			this->startState = newState.first;
-			this->finalState = newState.second;
-			states.push_back(newState.first);
-			states.push_back(newState.second);
+			newNFA.first->setStartState(true);
+			newNFA.second->setFinalState(true);
+			this->startState = newNFA.first;
+			this->finalState = newNFA.second;
+			states.push_back(newNFA.first);
+			states.push_back(newNFA.second);
 
 			NFA_Stack.push(make_pair(this->startState, this->finalState));
 		}
@@ -192,142 +210,181 @@ void NFA::generateNFA(string regex)
 			solveConcatenation(&NFA_Stack);
 		}
 	}
-	if(NFA_Stack.size() == 1)
-	{
-		NFA_Stack.pop();
-	}
 }
 
 void NFA::solveUnion(stack< pair<State*, State*> > *NFA_Stack)
 {
-	pair<State*, State*> oldState1 = NFA_Stack->top();
+	pair<State*, State*> oldNFA1 = NFA_Stack->top();
 	NFA_Stack->pop();
-	oldState1.first->setStartState(false);
-	oldState1.second->setFinalState(false);
-	pair<State*, State*> oldState2 = NFA_Stack->top();
+	oldNFA1.first->setStartState(false);
+	oldNFA1.second->setFinalState(false);
+	pair<State*, State*> oldNFA2 = NFA_Stack->top();
 	NFA_Stack->pop();
-	oldState2.first->setStartState(false);
-	oldState2.second->setFinalState(false);
+	oldNFA2.first->setStartState(false);
+	oldNFA2.second->setFinalState(false);
 	
-	pair<State*, State*> newState;
-	newState.first = new State(this->stateCounter++);
-	newState.second = new State(this->stateCounter++);
+	pair<State*, State*> newNFA;
+	newNFA.first = new State(this->stateCounter++);
+	newNFA.second = new State(this->stateCounter++);
 
-	newState.first->addNextState(this->epsilon, oldState1.first);
-	newState.first->addNextState(this->epsilon, oldState2.first);
+	newNFA.first->addNextState(this->epsilon, oldNFA2.first);
+	newNFA.first->addNextState(this->epsilon, oldNFA1.first);
 
-	oldState1.second->addNextState(this->epsilon, newState.second);
-	oldState2.second->addNextState(this->epsilon, newState.second);
+	oldNFA1.second->addNextState(this->epsilon, newNFA.second);
+	oldNFA2.second->addNextState(this->epsilon, newNFA.second);
 	
-	newState.first->setStartState(true);
-	newState.second->setFinalState(true);
-	states.push_back(newState.first);
-	states.push_back(newState.second);
+	newNFA.first->setStartState(true);
+	newNFA.second->setFinalState(true);
+	states.push_back(newNFA.first);
+	states.push_back(newNFA.second);
 
-	NFA_Stack->push(newState);
+	NFA_Stack->push(newNFA);
 	
-	this->startState = newState.first;
-	this->finalState = newState.second;
+	this->startState = newNFA.first;
+	this->finalState = newNFA.second;
 }
 
 void NFA::solveConcatenation(stack< pair<State*, State*> > *NFA_Stack)
 {
-	pair<State*, State*> oldState1 = NFA_Stack->top();
+	pair<State*, State*> oldNFA1 = NFA_Stack->top();
 	NFA_Stack->pop();
-	oldState1.first->setStartState(false);
-	oldState1.second->setFinalState(false);
-	pair<State*, State*> oldState2 = NFA_Stack->top();
+	oldNFA1.first->setStartState(false);
+	oldNFA1.second->setFinalState(false);
+
+	pair<State*, State*> oldNFA2 = NFA_Stack->top();
 	NFA_Stack->pop();
-	oldState2.first->setStartState(false);
-	oldState2.second->setFinalState(false);
+	oldNFA2.first->setStartState(false);
+	oldNFA2.second->setFinalState(false);
+
+	char transitionChar = oldNFA1.first->getTransitionChar();
+	oldNFA2.second->addNextState(transitionChar, oldNFA1.first->getNextTransitionStates(transitionChar));
 	
-	oldState2.second->addNextState(this->epsilon, oldState1.first);
+	// Remove first state of first NFA because final state of second NFA is merged with first state of first NFA
+	this->removeState(oldNFA1.first->getStateName());
 
-	oldState2.first->setStartState(true);
-	oldState1.second->setFinalState(true);
-	NFA_Stack->push(make_pair(oldState2.first, oldState1.second));
+	oldNFA2.first->setStartState(true);
+	oldNFA1.second->setFinalState(true);
+	NFA_Stack->push(make_pair(oldNFA2.first, oldNFA1.second));
 
-	this->startState = oldState2.first;
-	this->finalState = oldState1.second;
+	this->startState = oldNFA2.first;
+	this->finalState = oldNFA1.second;
 }
 
 void NFA::solveClosure(stack< pair<State*, State*> > *NFA_Stack)
 {
-	pair<State*, State*> oldState = NFA_Stack->top();
+	pair<State*, State*> oldNFA = NFA_Stack->top();
 	NFA_Stack->pop();
-	oldState.first->setStartState(false);
-	oldState.second->setFinalState(false);
+	oldNFA.first->setStartState(false);
+	oldNFA.second->setFinalState(false);
 	
-	pair<State*, State*> newState;
-	newState.first = new State(this->stateCounter++);
-	newState.second = new State(this->stateCounter++);
+	pair<State*, State*> newNFA;
+	newNFA.first = new State(this->stateCounter++);
+	newNFA.second = new State(this->stateCounter++);
 	
-	newState.first->addNextState(this->epsilon, oldState.first);
-	newState.first->addNextState(this->epsilon, newState.second);
-	oldState.second->addNextState(this->epsilon, newState.first);
-	oldState.second->addNextState(this->epsilon, newState.second);
+	newNFA.first->addNextState(this->epsilon, oldNFA.first);
+	newNFA.first->addNextState(this->epsilon, newNFA.second);
+	oldNFA.second->addNextState(this->epsilon, oldNFA.first);
+	oldNFA.second->addNextState(this->epsilon, newNFA.second);
 
-	newState.first->setStartState(true);
-	newState.second->setFinalState(true);
-	states.push_back(newState.first);
-	states.push_back(newState.second);
+	newNFA.first->setStartState(true);
+	newNFA.second->setFinalState(true);
+	states.push_back(newNFA.first);
+	states.push_back(newNFA.second);
 
-	NFA_Stack->push(newState);
+	NFA_Stack->push(newNFA);
 
-	this->startState = newState.first;
-	this->finalState = newState.second;
+	this->startState = newNFA.first;
+	this->finalState = newNFA.second;
 }
 
 void NFA::solveCross(stack< pair<State*, State*> > *NFA_Stack)
 {
-	pair<State*, State*> oldState = NFA_Stack->top();
+	pair<State*, State*> oldNFA = NFA_Stack->top();
 	NFA_Stack->pop();
-	oldState.first->setStartState(false);
-	oldState.second->setFinalState(false);
+	oldNFA.first->setStartState(false);
+	oldNFA.second->setFinalState(false);
 
-	pair<State*, State*> newState;
-	newState.first = new State(this->stateCounter++);
-	newState.second = new State(this->stateCounter++);
+	pair<State*, State*> newNFA;
+	newNFA.first = new State(this->stateCounter++);
+	newNFA.second = new State(this->stateCounter++);
 
-	newState.first->addNextState(this->epsilon, oldState.first);
-	oldState.second->addNextState(this->epsilon, newState.first);
-	oldState.second->addNextState(this->epsilon, newState.second);
+	newNFA.first->addNextState(this->epsilon, oldNFA.first);
+	oldNFA.second->addNextState(this->epsilon, oldNFA.first);
+	oldNFA.second->addNextState(this->epsilon, newNFA.second);
 
-	newState.first->setStartState(true);
-	newState.second->setFinalState(true);
-	states.push_back(newState.first);
-	states.push_back(newState.second);
+	newNFA.first->setStartState(true);
+	newNFA.second->setFinalState(true);
+	states.push_back(newNFA.first);
+	states.push_back(newNFA.second);
 	
-	NFA_Stack->push(newState);
+	NFA_Stack->push(newNFA);
 
-	this->startState = newState.first;
-	this->finalState = newState.second;
+	this->startState = newNFA.first;
+	this->finalState = newNFA.second;
+}
+
+State* NFA::getStateByName(string name)
+{
+	list<State*>::iterator it = states.begin();
+	for(it; it != states.end(); it++)
+	{
+		if((*it)->getStateName() == name)
+		{
+			return (*it);
+		}
+	}
+}
+
+void NFA::removeState(string name)
+{
+	list<State*>::iterator it = states.begin();
+	for(it; it != states.end(); it++)
+	{
+		if((*it)->getStateName() == name)
+		{
+			delete (*it);
+			states.erase(it);
+			return;
+		}
+	}
+}
+
+State* NFA::getStartState()
+{
+	return startState;
+}
+
+State* NFA::getFinalState()
+{
+	return finalState;
 }
 
 void NFA::printTransitionTable()
 {
 	cout << setw(10) << left << "\tStates\\IP";
-	for(int i=0; i<numInputChars; i++)
+	list<char>::iterator charIt = inputChars.begin();
+	for(charIt; charIt != inputChars.end(); charIt++)
 	{
-		cout << "\t" << setw(10) << left << inputChars[i];
+		cout << "\t" << setw(10) << left << (*charIt);
 	}
 	cout << endl;
-	list<State*>::iterator it = states.begin();
-	for(it; it != states.end(); it++)
+	list<State*>::iterator statesIt = states.begin();
+	for(statesIt; statesIt != states.end(); statesIt++)
 	{
-		if((*it)->isStartState())
+		if((*statesIt)->isStartState())
 		{
 			cout << " -->";
 		}
-		else if((*it)->isFinalState())
+		else if((*statesIt)->isFinalState())
 		{
 			cout << "  O";
 		}
-		cout << "\t" <<  setw(10) << left << (*it)->getStateName();
-		for(int i=0; i<numInputChars; i++)
+		cout << "\t" <<  setw(10) << left << (*statesIt)->getStateName();
+		for(charIt = inputChars.begin(); charIt != inputChars.end(); charIt++)
 		{
-			cout << "\t" << setw(10) << left << (*it)->getStateTransition(inputChars[i]);
+			cout << "\t" << setw(10) << left << (*statesIt)->getStateTransition((*charIt));
 		}
 		cout << endl;
 	}
+	cout << endl << "Total States: " << states.size() << endl;
 }
